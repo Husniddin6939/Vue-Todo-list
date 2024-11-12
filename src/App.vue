@@ -29,9 +29,10 @@
         <ul v-else class="mx-auto w-[400px] rounded-2xl p-2 my-4 bg-slate-500 ">
           <li v-for="(el, index) in tasks" class="relative bg-white p-3 mb-2 rounded-xl">
             <strong class="absolute top-0 text-xs">#{{ index+1 }}</strong>
-            <p class="mt-2 block text-xs">Lorem ipsum dolor sit amet.</p>
-            <button class="bg-red-600 focus:bg-red-500 me-1 text-white px-4 rounded-xl">X</button>
-            <button @click="confirmTask" class="bg-green-700 focus:bg-green-500 text-white px-4 rounded-xl">done</button>
+            <p v-if="el.complated" class="mt-2 block text-xs line-through">{{ el.title }}</p>
+            <p v-else class="mt-2 block text-xs">{{ el.title }}</p>
+            <button @click="()=>deleteTask(el.id)" class="bg-red-600 focus:bg-red-500 me-1 text-white px-4 rounded-xl">X</button>
+            <button @click="completedTask(el.id)" :disabled="el.complated" class="bg-green-700 disabled:bg-green-100 focus:bg-green-500 text-white px-4 rounded-xl">done</button>
           </li>
         </ul>
 
@@ -48,15 +49,20 @@
 <script setup>
 
 import { ref } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 const tasks = ref([]);
 
 const taskTitle = ref("");
 const taskDeadline = ref("");
 
+
 const addTask=()=>{
   if(taskDeadline.value.length && taskTitle.value.trim().length){
       const newTask={
+        id:uuidv4(),
         created_at: Date.now(),
         title:taskTitle.value,
         deadline:taskDeadline.value,
@@ -64,11 +70,37 @@ const addTask=()=>{
       }
 
       tasks.value.push(newTask)
-      console.log(tasks.value);
+      taskTitle.value="";
+      taskDeadline.value="";
+      toast.success("Task added successfully!", {
+        autoClose:1000
+      });
+  }else{
+    alert("Please add task title and deadline ");
+    toast.error("Task title and deadline are required!", {
+      autoClose:1000
+    })
   }
   
 }
 
+const deleteTask=(id)=>{
+  tasks.value=tasks.value.filter((item)=>item.id !=id);
+  toast.success("Task deleted successfully!", {
+    autoClose:1000
+  })
+}
+
+const completedTask=(id)=>{
+  tasks.value.forEach((item)=>{
+    if(item.id===id){
+      item.complated= true;
+    }
+  });
+  toast.success("Task completed successfully!", {
+    autoClose:1000
+  })
+}
 
 </script>
 
